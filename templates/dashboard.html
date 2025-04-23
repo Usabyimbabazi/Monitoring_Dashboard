@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+   
+
+    <script>
+        setTimeout(function(){
+            window.location.reload(1);
+        }, 10000);  // Auto-refresh every 10 seconds
+
+        //This script will reload the page every 10 seconds, so your system stats stay up-to-date.
+        
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    
+    <title>System Monitor</title>
+    <style>
+        
+        body {
+         
+            background-color:#ffffff;
+            text-align: center;
+            padding: 30px;
+        }
+    
+        .container {
+            display: flex;              /* Makes children line up horizontally */
+            justify-content: center;    /* Centers the boxes */
+            flex-wrap: wrap;            /* Wraps to next line on small screens */
+            gap: 3px;                  /* Space between boxes */
+        }
+    
+        .box {
+            background: white;
+            padding: 5px;
+            width: 250px;
+            height: 50px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px #ccc;
+        }
+    
+        h2 {
+            color: #333;
+        }
+    
+    .logo {
+        height: 30px;
+     
+        border-radius: 100px;
+        margin-right: 1900px;
+      
+    }
+    h1 {
+        margin: 10;
+        font-size: 30px;
+        color: #333;
+        font-weight: 600;
+    }
+
+
+    </style>
+    
+</head>
+<body>
+   
+
+    <img src="{{ url_for('static', filename='Untitled.png') }}" alt="Logo" class="logo">
+
+   
+        <h1> 🖥 System Monitoring Dashboard</h1>
+       
+    <div class="container">
+        <div class="box"><h2 style="margin-top:10px;">CPU Usage: {{ stats.cpu }}%</h2></div>
+        <div class="box"><h2 style="margin-top:10px;">Memory Usage: {{ stats.memory }}%</h2></div>
+        <div class="box"><h2 style="margin-top:10px;">Disk Usage: {{ stats.disk }}%</h2></div>
+        <div class="box"><h2 style="margin-top:10px;">Processes: {{ stats.processes }}%</h2></div>
+    </div>
+    <canvas id="systemStatsChart" width="400" height="200"></canvas>
+<script>
+    const ctx = document.getElementById('systemStatsChart').getContext('2d');
+    const systemStatsChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ["0s", "10s", "20s", "30s", "40s"],  // Time labels
+            datasets: [{
+                label: 'CPU Usage (%)',
+                data: [{{ stats.cpu }}, 0, 0, 0, 0],  // Replace with real-time data
+                borderColor: 'green',
+                backgroundColor: 'MediumSeaGreen',
+                borderWidth: 1
+            }, {
+                label: 'Memory Usage (%)',
+                data: [{{ stats.memory }}, 0, 0, 0, 0],
+                borderColor: 'rgba(54, 162, 235, 1)',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+
+  <!-- Load Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const ctx = document.getElementById('cpuChart').getContext('2d');
+    let cpuChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'CPU Usage (%)',
+                data: [],
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 2,
+                fill: false
+            }]
+        },
+        options: {
+            scales: {
+                x: {
+                    title: { display: true, text: 'Time' }
+                },
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: { display: true, text: 'CPU %' }
+                }
+            }
+        }
+    });
+
+    // Function to fetch live CPU data
+    async function updateCPUChart() {
+        const response = await fetch('/api/stats');
+        const data = await response.json();
+
+        const time = new Date().toLocaleTimeString();
+        const cpu = data.cpu;
+
+        // Update chart
+        if (cpuChart.data.labels.length > 10) {
+            cpuChart.data.labels.shift();
+            cpuChart.data.datasets[0].data.shift();
+        }
+
+        cpuChart.data.labels.push(time);
+        cpuChart.data.datasets[0].data.push(cpu);
+        cpuChart.update();
+    }
+
+    // Initial load + update every 10s
+    updateCPUChart();
+    setInterval(updateCPUChart, 10000);
+</script>
+  
+</body>
+</html>
